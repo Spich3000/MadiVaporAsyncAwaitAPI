@@ -15,7 +15,11 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? "rest_database"
     ), as: .psql)
 
+    
+    // Registr nigration
     app.migrations.add(CreateProduct())
+    app.migrations.add(CreateUser())
+
     try app.autoMigrate().wait()
     
     // register routes
