@@ -8,21 +8,21 @@
 import Fluent
 import Vapor
 
-struct CreateProduct: Migration {
+struct CreateProduct: AsyncMigration {
     
-    func prepare(on database: FluentKit.Database) -> NIOCore.EventLoopFuture<Void> {
-        database.schema("products")
+    func prepare(on database: FluentKit.Database) async throws {
+        let schema = database.schema("products")
             .id()
             .field("title", .string, .required)
             .field("description", .string, .required)
             .field("price", .int, .required)
             .field("category", .string, .required)
             .field("image", .string, .required)
-            .create()
+        try await schema.create()
     }
     
-    func revert(on database: FluentKit.Database) -> NIOCore.EventLoopFuture<Void> {
-        database.schema("products").delete()
+    func revert(on database: FluentKit.Database) async throws {
+        try await database.schema("products").delete()
     }
     
 }
