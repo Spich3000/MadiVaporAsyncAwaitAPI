@@ -27,9 +27,28 @@ struct ProductsController: RouteCollection {
     
     // MARK: CREATE
     func createHandler(_ req: Request) async throws -> Product {
-        guard let product =  try? req.content.decode(Product.self) else {
-            throw Abort(.custom(code: 499, reasonPhrase: "Не получилось декодировать контент в модель продукта"))
+        guard let productData = try? req.content.decode(ProductDTO.self) else { throw Abort(.custom(code: 499, reasonPhrase: "Не получилось декодировать контент в модель DTO продукта"))
         }
+        
+        let productID = UUID()
+        
+        let product = Product(id: productID,
+                              title: productData.title,
+                              description: productData.description,
+                              price: productData.price,
+                              category: productData.category,
+                              image: "")
+        
+        let imagePath = req.application.directory.workingDirectory + "/Storage/Products" + "/\(product.id!).jpg" // Path to save image
+        
+        try await req.fileio.writeFile(.init(data: productData.image), at: imagePath)
+        
+        product.image = imagePath
+        
+//        guard let product =  try? req.content.decode(Product.self) else {
+//            throw Abort(.custom(code: 499, reasonPhrase: "Не получилось декодировать контент в модель продукта"))
+//        }
+        
         try await product.save(on: req.db)
         return product
     }
@@ -67,4 +86,14 @@ struct ProductsController: RouteCollection {
         return product
     }
     
+}
+
+
+// Domen transfer object
+struct ProductDTO: Content {
+    var title: String
+    var description: String
+    var price: Int
+    var category: String
+    var image: Data
 }
