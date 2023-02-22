@@ -13,6 +13,8 @@ struct ProductsController: RouteCollection {
     func boot(routes: Vapor.RoutesBuilder) throws {
         let productsGroup = routes.grouped("products")
         productsGroup.post(use: createHandler)
+        productsGroup.get(use: getAllHandler)
+        productsGroup.get(":productID", use: getHandler)
     }
     
     func createHandler(_ req: Request) async throws -> Product {
@@ -27,6 +29,13 @@ struct ProductsController: RouteCollection {
         let products = try await Product.query(on: req.db).all()
         return products
     }
+    
+    func getHandler(_ req: Request) async throws -> Product {
+        guard let product = try await Product.find(req.parameters.get("productID"), on: req.db) // "productID" - dynamic parametr
+        else { throw Abort(.notFound)}
+        return product
+    }
+    
     
     
 }
