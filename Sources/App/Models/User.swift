@@ -53,6 +53,18 @@ final class User: Model, Content {
     
 }
 
+// Make user authentificatable
+extension User: ModelAuthenticatable {
+    
+    static var usernameKey = \User.$login
+    
+    static var passwordHashKey = \User.$password
+    
+    func verify(password: String) throws -> Bool {
+        try Bcrypt.verify(password, created: self.password)
+    }
+}
+
 // Create public user (without password) from private user 
 extension User {
     func convertToPublic() -> User.Public {
